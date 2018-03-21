@@ -1,0 +1,22 @@
+FROM elasticsearch:1.7.6
+
+MAINTAINER Khanh Nguyen <khanhnv.uit@gmail.com>
+
+RUN echo "* - nofile 65535" >> /etc/security/limits.conf && \
+    echo "* - memlock unlimited" >> /etc/security/limits.conf && \
+    echo vm.max_map_count=262144 > /etc/sysctl.d/max_map_count.conf && \
+    echo vm.swappiness=0 > /etc/sysctl.d/swappiness.conf
+
+ENV ES_HEAP_SIZE 1g
+ENV MAX_OPEN_FILES=65535
+ENV MAX_LOCKED_MEMORY=unlimited
+
+ADD ./plugins/elasticsearch-analysis-icu-2.7.0.zip /tmp/elasticsearch-analysis-icu-2.7.0.zip
+RUN /usr/share/elasticsearch/bin/plugin --install analysis-icu --url file:///tmp/elasticsearch-analysis-icu-2.7.0.zip
+
+ADD ./plugins/elasticsearch-HQ-1.0.0.zip /tmp/elasticsearch-HQ-1.0.0.zip
+RUN /usr/share/elasticsearch/bin/plugin --install ElasticHQ --url file:///tmp/elasticsearch-HQ-1.0.0.zip
+
+EXPOSE 9200 9300
+
+CMD ["elasticsearch"]

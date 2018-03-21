@@ -1,0 +1,116 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./html:/var/www/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx
+    links:
+      - php7
+    networks:
+      - customize
+
+  php7:
+    build:
+      context: ./php7
+    image: khanhnv/php7:latest
+    volumes:
+      - ./html:/var/www/html
+      - ./php7/supervisor/conf.d:/etc/supervisor/conf.d
+      - ./php7/supervisor/logs:/var/log/supervisor
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mariadb
+      - mongodb
+      - sqlite
+      - redis
+      - elastic
+      - rabbitmq
+    extra_hosts:
+      - "mail.tuoitre.com.vn:192.168.161.170"
+    working_dir: /var/www/html
+    networks:
+      - customize
+
+  mariadb:
+    image: mariadb:latest
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - customize
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./mongodb/data:/data/data
+    ports:
+      - 27017:27017
+    networks:
+      - customize
+
+  sqlite:
+    build:
+      context: ./sqlite
+    image: khanhnv/sqlite:alpine
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./sqlite/db/:/root/data/
+    networks:
+      - customize
+
+  redis:
+    image: redis:latest
+    volumes:
+      - ./redis/data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - customize
+
+  elastic:
+    build: 
+      context: ./elastic
+    image: khanhnv/elastic:v1.76
+    volumes:
+      - ./elastic/logs:/var/log/elasticsearch
+      - ./elastic/data:/var/lib/elasticsearch
+    ports:
+      - "9200:9200"
+    networks:
+      - customize
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - customize
+
+networks:
+  customize:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv4: "true"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/8

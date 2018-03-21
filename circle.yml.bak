@@ -1,0 +1,76 @@
+defaults: &defaults
+  environment:
+    DEBUG: true
+  docker:
+    - image: docker:17.12.0-ce-git
+  working_directory: ~/docker
+
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache py-pip curl
+            pip install docker-compose
+
+      - run:
+          name: Show Info
+          command: |
+            docker --version
+            docker-compose --version
+            docker info
+
+      - run:
+          name: Build Images
+          command: |
+            docker-compose build
+            docker images
+
+      - run:
+          name: Run Docker
+          command: |
+            docker-compose up -d
+            sleep 20
+            docker ps
+
+  test_docker:
+    <<: *defaults
+    steps:
+      - run:
+          name: Testing Port Docker 
+          command: |
+            docker port docker_nginx_1 80
+            docker port docker_elastic_1 9200
+            docker port docker_php7_1 9000
+            docker port docker_mariadb_1 3306
+            docker port docker_rabbitmq_1 15672
+            docker port docker_redis_1 6379
+
+  test_elasticsearch:
+    <<: *defaults
+    steps:
+      - run:
+          name: Testing elastic search
+          command: |
+            curl --retry 10 --retry-delay 5 -v http://127.0.0.1:9200
+            curl -XPUT 'http://127.0.0.1:9200/blog/user/khanh' -d '{ "name" : "Khanh" }'
+						curl -XPUT 'http://127.0.0.1:9200/blog/post/1' -d '{"user": "khanh", "date": "2018-03-21","body": "Search is hard","title": "Test"}'
+						curl -XPUT 'http://127.0.0.1:9200/blog/post/2' -d '{"user": "khanh", "date": "2018-03-21","body": "Search should be easy","title": " :v :v :v "}'
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test_docker:
+          requires:
+            - build
+      - test_elasticsearch:
+          requires:
+            - build

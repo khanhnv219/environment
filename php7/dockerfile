@@ -1,0 +1,81 @@
+FROM ubuntu:16.04
+
+MAINTAINER Khanh Nguyen <khanhnv.uit@gmail.com>
+
+ENV LC_ALL=C.UTF-8
+
+RUN apt-get update && \
+	apt-get -y install wget \
+	curl \
+	git \
+	software-properties-common \
+	python-software-properties \
+	debian-archive-keyring \
+	mcrypt
+
+RUN add-apt-repository ppa:ondrej/php
+RUN apt-get update && apt-get -y install \
+	vim \
+	python \
+    python-dev \
+    ca-certificates \
+    dialog \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    python-pip \
+    zip \
+    unzip \
+    iputils-ping \
+    build-essential nghttp2 libnghttp2-dev libssl-dev
+
+# Build openssl 1.1.0g
+RUN wget https://www.openssl.org/source/openssl-1.1.0g.tar.gz && \
+	tar xzvf openssl-1.1.0g.tar.gz && \
+	cd openssl-1.1.0g && \
+	./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' && \
+	make && make install && \
+	cd ../ && rm -rf openssl-1.1.0g.tar.gz openssl-1.1.0g
+
+# Build Curl with enable nghttp2
+RUN wget https://curl.haxx.se/download/curl-7.55.1.tar.bz2 && \
+	tar -xvjf curl-7.55.1.tar.bz2 && \
+	cd curl-7.55.1 && \
+	./configure --with-nghttp2 --prefix=/usr/local --with-ssl && \
+	make && make install && ldconfig && \
+	cd ../ && rm -rf curl-7.55.1.tar.bz2 curl-7.55.1
+
+# Install PHP7.0
+RUN	apt-get update && apt-get -y install php7.2 php7.2-cgi php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-gd php7.2-gmp php7.2-json php7.2-ldap php7.2-mysql \
+	php7.2-odbc php7.2-opcache php7.2-pgsql php7.2-pspell php7.2-readline php7.2-recode php7.2-sqlite3 php7.2-xml php7.2-xmlrpc libphp7.2-embed php7.2-bcmath \
+	php7.2-bz2 php7.2-fpm php7.2-imap php7.2-intl php7.2-mbstring php7.2-mcrypt php7.2-xsl php7.2-zip php7.2-dba php-redis
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ && mv /usr/bin/composer.phar /usr/bin/composer
+
+# Install Supervisor
+RUN apt-get -y install supervisor
+RUN mkdir -p /var/log/cache
+
+# Install Nodejs
+RUN curl -sL https://deb.nodesource.com/setup_8.x -o nodesource_setup.sh
+RUN chmod a+x nodesource_setup.sh && ./nodesource_setup.sh
+RUN apt-get update && apt-get -y install nodejs
+
+# Install network tools
+# RUN apt-get update && apt-get install -y telnet net-tools ip-utils-ping
+
+RUN	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+
+RUN update-alternatives --set php /usr/bin/php7.2
+
+# Add DNS Google
+RUN echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+
+ADD ./php/www.conf /etc/php/7.2/fpm/pool.d/www.conf
+ADD ./php/php.ini /etc/php/7.2/fpm/php.ini
+ADD ./php/php-fpm.conf /etc/php/7.2/fpm/php-fpm.conf
+ADD ./supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+
+EXPOSE 9000
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

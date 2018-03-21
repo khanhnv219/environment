@@ -1,1 +1,10 @@
 # Add any directories, files, or patterns you don't want to be tracked by version control
+html/*
+mariadb/data/*
+php7/supervisor/conf.d/*
+php7/supervisor/logs/*
+elastic/data/*
+elastic/logs/*
+nginx/conf.d/*
+nginx/logs/*
+redis/data/*
