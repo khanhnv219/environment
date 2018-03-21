@@ -27,8 +27,6 @@ services:
     extra_hosts:
       - "mail.tuoitre.com.vn:192.168.161.170"
     working_dir: /var/www/html
-    networks:
-      - network_custom
 
   mariadb:
     image: mariadb:latest
@@ -39,8 +37,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    networks:
-      - network_custom
 
   mongodb:
     image: mongo:latest
@@ -51,8 +47,6 @@ services:
       - ./mongodb/db:/data/data
     ports:
         - 27017:27017
-    networks:
-      - network_custom
 
   redis:
     image: redis:latest
@@ -60,8 +54,6 @@ services:
       - ./redis/data:/data
     ports:
       - "6379:6379"
-    networks:
-        - network_custom
 
   elastic:
     build: 
@@ -71,8 +63,7 @@ services:
       - ./elastic/logs:/var/log/elasticsearch
     ports:
       - "9200:9200"
-    networks:
-        - network_custom
+
   rabbitmq:
     image: rabbitmq:3-management
     environment:
@@ -81,8 +72,6 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
-    networks:
-      - network_custom
   
   sqlite:
     build:
@@ -92,16 +81,3 @@ services:
     tty: true
     volumes:
       - ./sqlite/db/:/root/data/
-    networks:
-      - network_custom
-
-networks:
-  network_custom:
-    driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv4: "true"
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.72.0.0/16
-          gateway: 172.72.0.1
