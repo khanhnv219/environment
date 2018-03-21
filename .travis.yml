@@ -22,9 +22,9 @@ script:
 - curl -XPUT 'http://127.0.0.1:9200/blog/user/khanh' -d '{ "name" : "Khanh" }'
 - curl -XPUT 'http://127.0.0.1:9200/blog/post/1' -d '{"user": "khanh", "date": "2018-03-21","body": "Search is hard","title": "Test"}'
 - curl -XPUT 'http://127.0.0.1:9200/blog/post/2' -d '{"user": "khanh", "date": "2018-03-21","body": "Search should be easy","title": " :v :v :v "}'
-after_success:
-- docker login -u $DOCKER_USER -p $DOCKER_PWD
-- docker push khanhnv/lar_circleci
+# after_success:
+# - docker login -u $DOCKER_USER -p $DOCKER_PWD
+# - docker push khanhnv/lar_circleci
 env:
   global:
   - secure: M44NVp3+BfClPJp5jDvNXb7havgzEMuJx0nBNh2GxT4CUOax4KnwRNwUcFYJR2i+12utXbs4gpC/sGSVhhos3GIW/dRrnEw0wJUwtRwXRq8ZBq2bX8AlemjLiTuFYnCpg7PjldX7dqg3i8s7wkTHcUDwCRzoN0NgK+Q5hXWpSD3ho47BfWX1F8AmmGXSH64Lk1JGn47hUDElMtgX/gx+iwzYeVRS2kA35fSkiNB/ddhBUpVmp/DA18VpktxIcghl4ACK9z0frYZgqf/uqPFfRI/H0O9GkRZOK7gzjxSoPP329NTDzVBPICREjv2/oKIf/LETXuO0pzKeR6XDTL2ylZ7VzNt0qvzrOWn8WZKpvUlmqoDZaIwQZRk8F/421eujqCFN7diuZ2sJqmrgX7aEDC+jb2R6JPDTe8fuqTkBim5ZoC3Z7h64CqXwwESEofQhqor25TzDpdO99xq2TrC3TzV2gxRg1oInFSUsKKBvBsRHCrLf1a+aHp15H13uI4jYrwHigeVxrsvBc3VMRJBfZkoTQs530sdwe06/XyeqSr0u3pbnsnQr9R4WPb5rh2/nUDMI8cBF7R3pKkIfalf//tgaHatQOduDApk6q5vIpg7+j3wwfGd5w4j/q9zTBbNLUql49tEuiprr3hrLNwKPSmeMJTubuEfHrpfzWpB6tOQ=
