@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --no-cache py-pip curl
+            apk add --no-cache py-pip curl curl-dev
             pip install docker-compose
 
       - run:
