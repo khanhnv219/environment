@@ -18,7 +18,7 @@ services:
   php7:
     build:
       context: ./php7
-    image: khanhnv/php7:latest
+    image: myspace/php7:latest
     volumes:
       - ./html:/var/www/html
       - ./php7/supervisor/conf.d:/etc/supervisor/conf.d
@@ -65,7 +65,7 @@ services:
   sqlite:
     build:
       context: ./sqlite
-    image: khanhnv/sqlite:alpine
+    image: myspace/sqlite:alpine
     stdin_open: true
     tty: true
     volumes:
@@ -85,7 +85,7 @@ services:
   elastic:
     build: 
       context: ./elastic
-    image: khanhnv/elastic:v1.76
+    image: myspace/elastic:v1.76
     volumes:
       - ./elastic/logs:/var/log/elasticsearch
       - ./elastic/data:/var/lib/elasticsearch
